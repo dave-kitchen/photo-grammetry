@@ -56,22 +56,41 @@ def process(args):
     global canvas
     canvas = tkinter.Canvas(window, width=image.size[0], height=image.size[1])
     canvas.pack()
+    global textout
+    textout = tkinter.Label(height=2)
+    textout.pack()
     image_tk = ImageTk.PhotoImage(image)
 
     canvas.create_image(image.size[0]//2, image.size[1]//2, image=image_tk)
 
     def callback(event):
-        global ref_point_1, ref_point_2
-        if ref_point_1 == None or ref_point_2 == None:
+        global ref_point_1, ref_point_2, textout
+        if ref_point_1 == None:
+            textout['text'] = 'Missing r(eferance) point'
+            return
+        if ref_point_2 == None:
+            textout['text'] = 'Missing s(cale) point'
             return
         ctl = (event.state & 4) != 0
-        print ("clicked at: ", (event.x, event.y),
-                at_scale(relative(event.x, event.y, ctl)))
+        global reference
+        if ctl or reference == None:
+            msg_pre = 'new ref: '
+        else:
+            msg_pre = ''
+
+        msg = msg_pre + "clicked at: {x} {y} -> {s:0.3f}".format(
+                                    x=event.x, y=event.y,
+                                    s=at_scale(relative(event.x, event.y, ctl)))
+#        print ("clicked at: ", (event.x, event.y),
+#                at_scale(relative(event.x, event.y, ctl)))
+        print(msg)
+        textout['text'] = msg
     def callback_1(event):
         global ref_point_1, ref_point_2
         # ctl = (event.state & 4) != 0
         if event.char in {'r','s'}:
             print (event.char, "pressed at: ", (event.x, event.y))
+            textout['text'] = '{} at {} {}'.format(event.char, event.x, event.y)
         # print ('callback_1')
             if event.char == 'r':
                 ref_point_1 = (event.x, event.y)
